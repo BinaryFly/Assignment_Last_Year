@@ -5,17 +5,20 @@ abstract class Card
 {
     private LocationState locationState;
     private string identifier; // if two cards are the same they should have the same identifier
-    private string description;
+    private string description; 
     private EnergyCost cost;
     private List<Effect> effects = new List<Effect> { };
+    private Colour colour;
 
-    public Card(string id, string description, EnergyCost cost) {
+    public Card(string id, string description, EnergyCost cost, Colour colour) {
         this.identifier = id;
         this.locationState = new InDeck(this);
         this.description = description;
         this.cost = cost;
+        this.colour = colour;
     }
-    public Card(string id, string description, EnergyCost cost, List<Effect> effects) : this(id, description, cost)
+
+    public Card(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects) : this(id, description, cost, colour)
     {
         this.effects = effects;
     }
@@ -25,6 +28,7 @@ abstract class Card
     public virtual string Description { get => description; }
     public EnergyCost Cost { get => cost; }
     public List<Effect> Effects { get => effects; }
+    public Colour Colour { get => colour; }
 
     // we implement all the methods of the location state 
     // under the card so we can wrap this behaviour with a different
@@ -54,6 +58,8 @@ abstract class Card
         return $"{Id} -- {Description}";
     }
 
+    // is mainly used to change the location in setup functions 
+    // without activating any effects in the meanwhile
     public void ChangeLocation(LocationState location)
     {
         this.locationState = location;
@@ -68,11 +74,13 @@ class Creature : Card, Target
     private List<Buff> buffs = new List<Buff>();
     private List<Damage> damages = new List<Damage>();
 
-    public Creature(string id, string description, EnergyCost cost, int attack, int defense)
-        : this(id, description, cost, new List<Effect>(), attack, defense) { }
+    // creatures with no activation of permanent effect
+    public Creature(string id, string description, EnergyCost cost, Colour colour, int attack, int defense)
+        : this(id, description, cost, colour, new List<Effect>(), attack, defense) { }
 
-    public Creature(string id, string description, EnergyCost cost, List<Effect> effects, int attack, int defense)
-        : base(id, description, cost, effects)
+    // for creatures with actual effects
+    public Creature(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects, int attack, int defense)
+        : base(id, description, cost, colour, effects)
     {
         this.attack = attack;
         this.defense = defense;
@@ -87,6 +95,7 @@ class Creature : Card, Target
 
     public int Attack
     {
+        // reduces the attack by using Aggregate (reduce) to put all buffs on the initial attack before attacking
         get => this.buffs.Aggregate(attack, (att, buff) => buff.Attack(att));
     }
 
@@ -94,7 +103,10 @@ class Creature : Card, Target
     {
         get
         {
+            // concatenate the damages with the buffs for calculating the defense
             var allDefenses = this.buffs.Concat(damages);
+
+            // reduces the defense by using Aggregate (reduce) to put all buffs on the initial defense before attacking
             return allDefenses.Aggregate(defense, (def, buff) => buff.Defense(def));
         }
     }
@@ -181,15 +193,13 @@ class Damage : Buff
 class Land : Card
 {
     private LandState landState;
-    private Colour colour;
 
     // we use the passed colour here to set the cost, this is purerly out of convenience
     // we do not actually use the cost field if a land get's played since we will check if it's type is a land
     // before checking the cost of the card
-    public Land(string id, string description, Colour colour) : base(id, description, new NoCost())
+    public Land(string id, string description, Colour colour) : base(id, description, new NoCost(), colour)
     {
         this.landState = new UnTurned(this);
-        this.colour = colour;
     }
 
     public LandState State
@@ -197,8 +207,6 @@ class Land : Card
         get { return landState; }
         set { this.landState = value; }
     }
-
-    public Colour Colour { get => colour; }
 
     public override string Description { get => $"({this.landState.GetType().Name}) {base.Description}"; }
     public void Reset()
@@ -221,14 +229,14 @@ class Land : Card
 // still it might be handy for example when an effect has an effect on all spells in the deck
 class Spell : Card
 {
-    public Spell(string id, string description, EnergyCost cost) : base(id, description, cost) { }
-    public Spell(string id, string description, EnergyCost cost, List<Effect> effects) : base(id, description, cost, effects) { }
+    public Spell(string id, string description, EnergyCost cost, Colour colour) : base(id, description, cost, colour) { }
+    public Spell(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects) : base(id, description, cost, colour, effects) { }
 }
 
 // this is for spells that are immediately disposed after playing
 class Immediate : Spell
 {
-    public Immediate(Card spell) : base(spell.Id, spell.Description, spell.Cost, spell.Effects) { }
+    public Immediate(Card spell) : base(spell.Id, spell.Description, spell.Cost, spell.Colour, spell.Effects) { }
 
     public override void Play()
     {

@@ -70,16 +70,17 @@ class Player : Target
     public void ResetLands()
     {
         Console.WriteLine("### Lands are being reset ###");
-        var landsOnBoard = Cards.GetCardsThatAre<Land, OnBoard>();
-        landsOnBoard.ForEach((land) => land.Reset());
+        foreach (Land land in Cards.Lands.OnBoard) {
+            land.Reset();
+        }
         Console.WriteLine("");
     }
-
     public void ResetCreatures()
     {
         Console.WriteLine("### Creatures are being reset to defending state ###");
-        var creaturesOnBoard = Cards.GetCardsThatAre<Creature, OnBoard>();
-        creaturesOnBoard.ForEach((creature) => creature.PerformDefend());
+        foreach (Creature creature in Cards.Creatures.OnBoard) {
+            creature.PerformDefend();
+        }
         Console.WriteLine("");
     }
 
@@ -87,9 +88,9 @@ class Player : Target
     {
         // checking if there are any cards left to draw
         // if not send a 'PlayerDiedEvent' to the eventHandler
-        var cardsInDeck = this.Cards.GetCardsThatAre<InDeck>();
+        var cardToDraw = this.Cards.InDeck.FirstOrDefault();
 
-        if (cardsInDeck.Count() == 0)
+        if (cardToDraw is null)
         {
             Console.WriteLine($"No more cards to draw, killing player {this.Name}");
             this.IsDead = true;
@@ -98,7 +99,6 @@ class Player : Target
 
         Console.WriteLine("### A card is being drawn... ###");
         // drawing the actual card
-        var cardToDraw = cardsInDeck[0];
         cardToDraw.Draw();
         Console.WriteLine("");
     }
@@ -109,7 +109,7 @@ class Player : Target
     public void DiscardExcessCards()
     {
         Console.WriteLine("### Disposing excess cards ###");
-        var cardsInHand = this.Cards.GetCardsThatAre<InHand>();
+        var cardsInHand = this.Cards.InHand;
         var cardsToDispose = cardsInHand.Count() - Constants.MAX_CARDS_IN_HAND;
 
         for (int cardsDisposed = 0; cardsDisposed < cardsToDispose; cardsDisposed++)
@@ -122,7 +122,7 @@ class Player : Target
 
     public void ChooseCardInHandToPlay()
     {
-        var cardsInHand = Cards.GetCardsThatAre<InHand>();
+        var cardsInHand = Cards.InHand;
         var cardMenu = new CardMenu<Card>(cardsInHand, PlaySelectedCard);
         cardMenu.Prompt("Which card do you want to play?:");
     }
@@ -154,7 +154,7 @@ class Player : Target
 
     private List<Land> ChooseLandsToTurn(int amountOfLandsNeeded)
     {
-        var landsOnBoard = Cards.GetCardsThatAre<Land, OnBoard>();
+        var landsOnBoard = Cards.Lands.OnBoard;
         var landsAbleToTurn = landsOnBoard.Where((land) => land.State is UnTurned).ToList();
         var nominatedLands = new List<Land>();
         if (landsAbleToTurn.Count < amountOfLandsNeeded)
@@ -190,7 +190,6 @@ class Player : Target
 
     public List<Creature> GetDefendingCreatures()
     {
-        var creaturesOnBoard = this.Cards.GetCardsThatAre<Creature, OnBoard>();
-        return creaturesOnBoard.Where((creature) => creature.State is Defending).ToList();
+        return this.Cards.Creatures.OnBoard.Where((creature) => creature.State is Defending).ToList();
     }
 }

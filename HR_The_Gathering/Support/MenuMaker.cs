@@ -101,7 +101,7 @@ namespace Support
 
     class CardMenu<CardType> : Menu where CardType : Card
     {
-        public CardMenu(List<CardType> cards, Action<CardType> action) : base(
+        public CardMenu(IEnumerable<CardType> cards, Action<CardType> action) : base(
                 cards.Select((card) => new MenuItem(card.ToString(), () => { action(card); })).ToList())
         { }
     }

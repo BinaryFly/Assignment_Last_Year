@@ -82,7 +82,6 @@ class GameBoard : EventReactor
         this.currentPhase = newPhase;
     }
 
-
     // if the current player is still a dummy player, set the newly set player also as the current player
     private void SetPlayerIfDummy(Player playerToSet)
     {
@@ -157,7 +156,7 @@ class GameBoard : EventReactor
         {
             // return all creatures as targets whenever there are defending creatures
             // the player should also be able to attack attacking creatures if there are defending ones
-            return Opponent.Cards.GetCardsThatAre<Creature, OnBoard>().ToList<Target>();
+            return Opponent.Cards.OnBoard.Creatures.ToList<Target>();
         }
         return new List<Target>() { Opponent };
     }

@@ -107,7 +107,7 @@ namespace Support
             playerOneCardsLocation.Add("InHand", new List<string>() { "ocean", "water-sprite" });
             playerOneCardsLocation.Add("Disposed", new List<string>() { "Blue-mock-card" });
             // setting the cards on board
-            foreach (Card card in playerOneCards.GetCards)
+            foreach (Card card in playerOneCards)
             {
                 if (playerOneCardsLocation["OnBoard"].Contains(card.Id))
                 {
@@ -126,11 +126,11 @@ namespace Support
                 }
             }
 
-            var playerOneLandsOnBoard = playerOneCards.GetCardsThatAre<Land, OnBoard>();
+            var playerOneLandsOnBoard = playerOneCards.Lands.OnBoard;
             playerOneLandsOnBoard.Take(2).ToList().ForEach((card) => card.Turn());
 
             // fill the rest of the hand with null-cards
-            foreach (Card card in playerOneCards.GetCards) if (playerOneCards.GetCardsThatAre<InHand>().Count < 7)
+            foreach (Card card in playerOneCards) if (playerOneCards.InHand.Count() < 7)
                 {
                     if (card.Id == "null-card")
                     {
@@ -146,7 +146,7 @@ namespace Support
             playerTwoCardsLocation.Add("InHand", new List<string>() { "brown-bear", "get-back-pet", "the-bane-of-my-life" });
             playerTwoCardsLocation.Add("Disposed", new List<string>() { "Colourless-mock-card", "Colourless-mock-card", "Colourless-mock-card" });
             // setting the cards on board
-            foreach (Card card in playerTwoCards.GetCards)
+            foreach (Card card in playerTwoCards)
             {
                 if (playerTwoCardsLocation["OnBoard"].Contains(card.Id))
                 {
@@ -165,7 +165,7 @@ namespace Support
                 }
             }
 
-            foreach (Card card in playerTwoCards.GetCards) if (playerTwoCards.GetCardsThatAre<InHand>().Count < 7)
+            foreach (Card card in playerTwoCards) if (playerTwoCards.InHand.Count() < 7)
                 {
                     if (card.Id == "null-card")
                     {
