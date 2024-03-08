@@ -57,7 +57,7 @@ class CardCollection<CardType> : IEnumerable<CardType> where CardType : Card
     // to get all cards of a certain type
     private IEnumerable<T> GetCardsOfType<T>() where T : Card
     {
-        return (IEnumerable<T>)this.Where((card) => card is T);
+        return this.OfType<T>();
     }
 
     // to get all cards of a certain colour
@@ -65,14 +65,7 @@ class CardCollection<CardType> : IEnumerable<CardType> where CardType : Card
     private IEnumerable<Card> GetCardsWithColour<ColourType>() where ColourType : Colour, new()
     {
         var colourToGet = ColourCreator.GetColour<ColourType>();
-        // we have to get the colour of lands separately since they have NoCost and this doesn't have a specific colour
-        var landsWithColour = this.Lands.Where((card) => card.Colour == colourToGet);
-        var otherCardsWithColour = this.Where((card) => card.Cost.Contains(colourToGet));
-
-        var allCardsWithColour = landsWithColour.Concat<Card>(otherCardsWithColour);
-
-        return allCardsWithColour;
-
+        return this.Where((card) => card.Colour == colourToGet);
     }
 }
 

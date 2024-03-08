@@ -53,6 +53,7 @@ class InHand : LocationState
     public override void Play()
     {
         Console.WriteLine($"Playing card: {this.owner.ToString()}");
+        this.owner.TurnPlayed = GameBoard.Instance.CurrentPlayer.Turn;
         // every card goes on the board, immediate spells get disposed right after anyway
         this.owner.ChangeLocation(new OnBoard(this.owner));
         // registering all effects here in case a card has more than one effect
@@ -171,7 +172,7 @@ abstract class LandState : State<Land>
         return this.owner.Colour;
     }
 
-    public virtual void Turn() { }
+    public virtual Colour? Turn() { return null; }
     public virtual void Reset() { }
 }
 
@@ -195,9 +196,16 @@ class UnTurned : LandState
 {
     public UnTurned(Land land) : base(land) { }
 
-    public override void Turn()
+    public override Colour? Turn()
     {
+        // return null if it is the same turn as the land was played
+        if (this.owner.TurnPlayed == GameBoard.Instance.CurrentPlayer.Turn) 
+        {
+            return null;
+        }
+
         Console.WriteLine($"Turning land: {this.owner.Id}");
         this.owner.State = new Turned(this.owner);
+        return this.owner.Colour;
     }
 }

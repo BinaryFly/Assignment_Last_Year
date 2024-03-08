@@ -6,11 +6,12 @@ abstract class Card
     private LocationState locationState;
     private string identifier; // if two cards are the same they should have the same identifier
     private string description; 
-    private EnergyCost cost;
+    private CardCost cost;
     private List<Effect> effects = new List<Effect> { };
     private Colour colour;
+    private int turnPlayed; // keeps track of the turn this card was played at
 
-    public Card(string id, string description, EnergyCost cost, Colour colour) {
+    public Card(string id, string description, CardCost cost, Colour colour) {
         this.identifier = id;
         this.locationState = new InDeck(this);
         this.description = description;
@@ -18,7 +19,7 @@ abstract class Card
         this.colour = colour;
     }
 
-    public Card(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects) : this(id, description, cost, colour)
+    public Card(string id, string description, CardCost cost, Colour colour, List<Effect> effects) : this(id, description, cost, colour)
     {
         this.effects = effects;
     }
@@ -26,9 +27,10 @@ abstract class Card
     public LocationState Location { get => locationState; }
     public string Id { get => identifier; }
     public virtual string Description { get => description; }
-    public EnergyCost Cost { get => cost; }
+    public CardCost Cost { get => cost; }
     public List<Effect> Effects { get => effects; }
     public Colour Colour { get => colour; }
+    public int TurnPlayed { get => turnPlayed; set => turnPlayed = value; }
 
     // we implement all the methods of the location state 
     // under the card so we can wrap this behaviour with a different
@@ -75,11 +77,11 @@ class Creature : Card, Target
     private List<Damage> damages = new List<Damage>();
 
     // creatures with no activation of permanent effect
-    public Creature(string id, string description, EnergyCost cost, Colour colour, int attack, int defense)
+    public Creature(string id, string description, CardCost cost, Colour colour, int attack, int defense)
         : this(id, description, cost, colour, new List<Effect>(), attack, defense) { }
 
     // for creatures with actual effects
-    public Creature(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects, int attack, int defense)
+    public Creature(string id, string description, CardCost cost, Colour colour, List<Effect> effects, int attack, int defense)
         : base(id, description, cost, colour, effects)
     {
         this.attack = attack;
@@ -197,7 +199,7 @@ class Land : Card
     // we use the passed colour here to set the cost, this is purerly out of convenience
     // we do not actually use the cost field if a land get's played since we will check if it's type is a land
     // before checking the cost of the card
-    public Land(string id, string description, Colour colour) : base(id, description, new NoCost(), colour)
+    public Land(string id, string description, Colour colour) : base(id, description, new NoCost(colour), colour)
     {
         this.landState = new UnTurned(this);
     }
@@ -214,14 +216,10 @@ class Land : Card
         this.State.Reset();
     }
 
-    public void Turn()
+    // gives back a Colour/Energy depending on if the card has already been turned yet
+    public Colour? Turn()
     {
-        this.State.Turn();
-    }
-
-    public Colour? GetEnergy()
-    {
-        return this.State.GetEnergy();
+        return this.State.Turn();
     }
 }
 
@@ -229,8 +227,8 @@ class Land : Card
 // still it might be handy for example when an effect has an effect on all spells in the deck
 class Spell : Card
 {
-    public Spell(string id, string description, EnergyCost cost, Colour colour) : base(id, description, cost, colour) { }
-    public Spell(string id, string description, EnergyCost cost, Colour colour, List<Effect> effects) : base(id, description, cost, colour, effects) { }
+    public Spell(string id, string description, CardCost cost, Colour colour) : base(id, description, cost, colour) { }
+    public Spell(string id, string description, CardCost cost, Colour colour, List<Effect> effects) : base(id, description, cost, colour, effects) { }
 }
 
 // this is for spells that are immediately disposed after playing
