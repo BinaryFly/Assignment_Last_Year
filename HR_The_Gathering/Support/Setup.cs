@@ -5,13 +5,13 @@ namespace Support
 {
     class Setup
     {
-        public static void DemoSituation()
+        public static void SetupDemoSituation()
         {
-            DemoSetup();
-            DemoStartingState();
+            SetupPlayersAndCards();
+            SetupStartingState();
         }
 
-        private static void DemoSetup()
+        private static void SetupPlayersAndCards()
         {
             var gb = GameBoard.Instance;
             gb.PlayerOne = PlayerOne();
@@ -25,12 +25,16 @@ namespace Support
             return new Player("Eric Cartman");
         }
 
+        public static Player PlayerTwo()
+        {
+            return new Player("Kyle Broflovski");
+        }
+
         private static Cards PlayerOneDeck()
         {
             var oceanCreator = new OceanCreator();
-            var waterSpriteCreator = new WaterSpriteCreator();
-            var zupparColdTrapCreator = new ZupparColdTrapCreator();
             var mockBlueCard = new MockColourCard<Blue>();
+            var waterSpriteCreator = new WaterSpriteCreator();
 
             var cardList = new List<Card>();
 
@@ -41,12 +45,10 @@ namespace Support
             }
 
             cardList.Add(waterSpriteCreator.Create());
-            cardList.Add(zupparColdTrapCreator.Create());
-
             cardList.Add(mockBlueCard.Create());
 
-            // filling up the rest of the deck with null objects
-            var nullCardCreator = new NullCardCreator();
+            // filling up the rest of the deck with null objects with a white colour (colour doesn't matter here)
+            var nullCardCreator = new NullCardCreator<White>();
             while (cardList.Count < 30)
             {
                 cardList.Add(nullCardCreator.Create());
@@ -55,20 +57,11 @@ namespace Support
             return new Cards(cardList);
         }
 
-        public static Player PlayerTwo()
-        {
-            return new Player("Kyle Broflovski");
-        }
-
         public static Cards PlayerTwoDeck()
         {
             var volcanoCreator = new VolcanoCreator();
             var skyCreator = new SkyCreator();
             var desertCreator = new DesertCreator();
-
-            var brownBearCreator = new BrownBearCreator();
-            var getBackPetCreator = new GetBackPetCreator();
-            var baneOfMyLifeCreator = new BaneOfMyLifeCreator();
 
             var cardList = new List<Card>();
 
@@ -79,12 +72,9 @@ namespace Support
 
             cardList.Add(volcanoCreator.Create());
             cardList.Add(skyCreator.Create());
-            cardList.Add(brownBearCreator.Create());
-            cardList.Add(getBackPetCreator.Create());
-            cardList.Add(baneOfMyLifeCreator.Create());
 
-            // filling up the rest of the deck with null objects
-            var nullCardCreator = new NullCardCreator();
+            // filling up the rest of the deck with null objects with a white colour (colour doesn't matter here)
+            var nullCardCreator = new NullCardCreator<White>();
             while (cardList.Count < 30)
             {
                 cardList.Add(nullCardCreator.Create());
@@ -95,7 +85,7 @@ namespace Support
 
 
         // after setting the cards for each player set the starting state
-        private static void DemoStartingState()
+        private static void SetupStartingState()
         {
             var gb = GameBoard.Instance;
 
@@ -105,7 +95,6 @@ namespace Support
             Dictionary<string, List<string>> playerOneCardsLocation = new Dictionary<string, List<string>>();
             playerOneCardsLocation.Add("OnBoard", new List<string>() { "ocean", "ocean", "ocean" });
             playerOneCardsLocation.Add("InHand", new List<string>() { "ocean", "water-sprite" });
-            playerOneCardsLocation.Add("Disposed", new List<string>() { "Blue-mock-card" });
             // setting the cards on board
             foreach (Card card in playerOneCards)
             {
@@ -119,11 +108,11 @@ namespace Support
                     card.ChangeLocation(new InHand(card));
                     playerOneCardsLocation["InHand"].Remove(card.Id);
                 }
-                else if (playerOneCardsLocation["Disposed"].Contains(card.Id))
-                {
-                    card.ChangeLocation(new Disposed(card));
-                    playerOneCardsLocation["Disposed"].Remove(card.Id);
-                }
+                /* else if (playerOneCardsLocation["Disposed"].Contains(card.Id)) */
+                /* { */
+                /*     card.ChangeLocation(new Disposed(card)); */
+                /*     playerOneCardsLocation["Disposed"].Remove(card.Id); */
+                /* } */
             }
 
             var playerOneLandsOnBoard = playerOneCards.Lands.OnBoard;
@@ -143,8 +132,7 @@ namespace Support
 
             Dictionary<string, List<string>> playerTwoCardsLocation = new Dictionary<string, List<string>>();
             playerTwoCardsLocation.Add("OnBoard", new List<string>() { "volcano", "desert", "desert", "desert" });
-            playerTwoCardsLocation.Add("InHand", new List<string>() { "brown-bear", "get-back-pet", "the-bane-of-my-life" });
-            playerTwoCardsLocation.Add("Disposed", new List<string>() { "Colourless-mock-card", "Colourless-mock-card", "Colourless-mock-card" });
+            playerTwoCardsLocation.Add("InHand", new List<string>() { "brown-bear", "the-bane-of-my-life" });
             // setting the cards on board
             foreach (Card card in playerTwoCards)
             {
@@ -158,11 +146,11 @@ namespace Support
                     card.ChangeLocation(new InHand(card));
                     playerTwoCardsLocation["InHand"].Remove(card.Id);
                 }
-                else if (playerTwoCardsLocation["Disposed"].Contains(card.Id))
-                {
-                    card.ChangeLocation(new Disposed(card));
-                    playerTwoCardsLocation["Disposed"].Remove(card.Id);
-                }
+                /* else if (playerTwoCardsLocation["Disposed"].Contains(card.Id)) */
+                /* { */
+                /*     card.ChangeLocation(new Disposed(card)); */
+                /*     playerTwoCardsLocation["Disposed"].Remove(card.Id); */
+                /* } */
             }
 
             foreach (Card card in playerTwoCards) if (playerTwoCards.InHand.Count() < 7)
@@ -176,7 +164,7 @@ namespace Support
 
 
         // we set all the effects that happen every turn here so they can be overwritten by other effects at runtime
-        public static void DefaultEffects()
+        public static void SetupDefaultEffects()
         {
             EventReactor eventHandler = GameBoard.Instance;
 

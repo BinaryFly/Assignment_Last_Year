@@ -16,8 +16,8 @@ internal class Program
         }
         Console.WriteLine("Preparing Demo...");
         // SetUpGameBoard();  // useful for not demoing
-        Setup.DemoSituation();
-        Setup.DefaultEffects();
+        Setup.SetupDemoSituation();
+        Setup.SetupDefaultEffects();
 
         Console.WriteLine("Starting Game!");
         // creating the game loop

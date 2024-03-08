@@ -40,17 +40,18 @@ namespace Support
             Console.WriteLine(prompt);
             Show();
             Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+
             string chosenOption;
             if (Constants.DEBUG && DemoListChoices.Count > 0)
             {
                 Console.WriteLine(DemoListChoices.Peek());
                 chosenOption = DemoListChoices.Pop().ToString();
-
             }
             else
             {
                 chosenOption = ReadOption();
             }
+
             while (!ChosenOptionIsValid(chosenOption))
             {
                 Console.Clear();
