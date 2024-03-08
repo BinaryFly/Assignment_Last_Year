@@ -110,8 +110,7 @@ class GameBoard : EventReactor
 
     public void GameOver()
     {
-        // FUTURE: if the player can be revived or doesn't necessarily stay dead after dying
-        //  do not unregister all the effects
+        // FUTURE: if the player can be revived or doesn't necessarily stay dead after dying do not unregister all the effects
         this.UnRegisterAll();
         UpdatePhase(new Ending());
         AnnounceGameWinner();
@@ -165,14 +164,14 @@ class GameBoard : EventReactor
     public void LogSituation()
     {
         Console.WriteLine(@$"
-===== Current Situation =====
-Turn of {currentPlayer.GetName()}
+===== Current Situation =====                               
+Turn {currentPlayer.Turn} of {currentPlayer.GetName()}
 Player {PlayerOne.GetName()}: Health: {PlayerOne.Health}
 Player {PlayerTwo.GetName()}: Health: {PlayerTwo.Health}
 
 ===== Player {PlayerOne.GetName()} cards overview =====
 {PlayerOne.Cards.ToString()}
-
+ 
 ===== Player {PlayerTwo.GetName()} cards overview =====
 {PlayerTwo.Cards.ToString()}
 ");

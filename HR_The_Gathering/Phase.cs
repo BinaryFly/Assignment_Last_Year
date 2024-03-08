@@ -15,6 +15,7 @@ class Preparation : Phase
     {
         GameBoard.Instance.HandleEvents(new List<Event>() { Event.LOG_NEW_TURN, Event.ENTER_PREPARATION_PHASE });
         var player = GameBoard.Instance.CurrentPlayer;
+        player.IncrementTurn();
         player.ResetLands();
         player.ResetCreatures();
         NextPhase();

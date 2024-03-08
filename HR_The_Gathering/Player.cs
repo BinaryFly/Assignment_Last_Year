@@ -20,6 +20,7 @@ class Player : Target
     private bool dead = false;
     private Cards cards = new Cards(new List<Card>());
     private EnergyPayment generatedEnergy = new EnergyPayment();
+    private int turn = 0;
 
     public Player(string name)
     {
@@ -55,6 +56,7 @@ class Player : Target
     }
 
     public string Name { get => this.name; }
+    public int Turn { get => turn; }
 
     // yes this is the same as the property above, but this is implemented to satisfy the Target interface
     public string GetName()
@@ -70,15 +72,18 @@ class Player : Target
     public void ResetLands()
     {
         Console.WriteLine("### Lands are being reset ###");
-        foreach (Land land in Cards.Lands.OnBoard) {
+        foreach (Land land in Cards.Lands.OnBoard)
+        {
             land.Reset();
         }
         Console.WriteLine("");
     }
+
     public void ResetCreatures()
     {
         Console.WriteLine("### Creatures are being reset to defending state ###");
-        foreach (Creature creature in Cards.Creatures.OnBoard) {
+        foreach (Creature creature in Cards.Creatures.OnBoard)
+        {
             creature.PerformDefend();
         }
         Console.WriteLine("");
@@ -191,5 +196,10 @@ class Player : Target
     public List<Creature> GetDefendingCreatures()
     {
         return this.Cards.Creatures.OnBoard.Where((creature) => creature.State is Defending).ToList();
+    }
+
+    public void IncrementTurn()
+    {
+        this.turn++;
     }
 }
