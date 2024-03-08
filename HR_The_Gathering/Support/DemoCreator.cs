@@ -11,7 +11,8 @@ namespace Support
 
         protected abstract string GetId();
         protected abstract string GetDescription();
-        protected abstract EnergyCost CreateEnergyCost();
+        protected abstract CardCost CreateEnergyCost();
+        protected abstract Colour CreateColour();
         protected abstract List<Effect> CreateEffects();
     }
 
@@ -22,8 +23,9 @@ namespace Support
             var id = this.GetId();
             var description = this.GetDescription();
             var cost = this.CreateEnergyCost();
+            var colour = this.CreateColour();
             var effects = this.CreateEffects();
-            return new Spell(id, description, cost, effects);
+            return new Spell(id, description, cost, colour, effects);
         }
     }
 
@@ -47,7 +49,7 @@ namespace Support
             return new Land(id, description, colour);
         }
 
-        protected Colour CreateColour()
+        protected override Colour CreateColour()
         {
             return ColourCreator.GetColour<LandColour>();
         }
@@ -56,7 +58,7 @@ namespace Support
         // don't override all abstract inherited members
         protected override NoCost CreateEnergyCost()
         {
-            return new NoCost();
+            return new NoCost(ColourCreator.GetColour<LandColour>());
         }
 
         protected override List<Effect> CreateEffects()
@@ -72,10 +74,11 @@ namespace Support
             var id = this.GetId();
             var description = this.GetDescription();
             var cost = this.CreateEnergyCost();
+            var colour = this.CreateColour();
             var effects = this.CreateEffects();
             var attack = this.GetAttack();
             var defense = this.GetDefense();
-            return new Creature(id, description, cost, effects, attack, defense);
+            return new Creature(id, description, cost, colour, effects, attack, defense);
         }
 
         abstract protected int GetAttack();
