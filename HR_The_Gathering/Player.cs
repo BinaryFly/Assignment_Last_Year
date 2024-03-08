@@ -19,7 +19,7 @@ class Player : Target
     private string name;
     private bool dead = false;
     private Cards cards = new Cards(new List<Card>());
-    private EnergyPayment generatedEnergy = new EnergyPayment();
+    private IDictionary<string, int> generatedEnergy = new Dictionary<string, int>();
     private int turn = 0;
 
     public Player(string name)
@@ -134,63 +134,73 @@ class Player : Target
 
     private void PlaySelectedCard(Card card)
     {
-        if (card is Land)
+        var chosenLands = ChooseLandsToTurn(card.Cost.Amount);
+        TurnLands(chosenLands);
+        if (card.Cost.CanBePaidWith(generatedEnergy))
         {
+            card.Cost.Pay(generatedEnergy);
             card.Play();
-            return;
         }
-
-        PlayCardWithLandEnergy(card);
-    }
-
-    private void PlayCardWithLandEnergy(Card card)
-    {
-        var numberOfColours = card.Cost.ToList().Count;
-        var landsToTurn = ChooseLandsToTurn(numberOfColours);
-        if (!generatedEnergy.CanPayFor(card.Cost))
+        else
         {
+            // we reset the lands that were turned before and remove the energy in the generated energy
             Console.WriteLine("Not enough energy to play card!");
-            this.generatedEnergy.Clear();
-            return;
+            chosenLands.ForEach((land) => land.Reset());
+            generatedEnergy.Clear();
         }
-        landsToTurn.ForEach((land) => land.State.Turn());
-        card.Play();
+
     }
 
+    // TODO: test this
     private List<Land> ChooseLandsToTurn(int amountOfLandsNeeded)
     {
-        var landsOnBoard = Cards.Lands.OnBoard;
-        var landsAbleToTurn = landsOnBoard.Where((land) => land.State is UnTurned).ToList();
-        var nominatedLands = new List<Land>();
+        if (amountOfLandsNeeded == 0)
+        {
+            // return early without nominating lands, since none need to be turned
+            return new List<Land>();
+        }
+
+        // the lands that are able to turn are all the lands that are UnTurned and not played this turn
+        var landsAbleToTurn = Cards.Lands.OnBoard.Where((land) =>
+                land.State is UnTurned && land.TurnPlayed != this.Turn).ToList();
+        var chosenLands = new List<Land>();
         if (landsAbleToTurn.Count < amountOfLandsNeeded)
         {
             Console.WriteLine("Not enough lands available to satisfy cost...");
-            return nominatedLands;
+            return chosenLands;
         }
 
-        while (nominatedLands.Count < amountOfLandsNeeded)
+        while (chosenLands.Count < amountOfLandsNeeded)
         {
+            // we have to keep making a new menu in the while loop here to update the query
             var chooseLandMenu = new CardMenu<Land>(landsAbleToTurn, (land) =>
             {
-                // we modify the state of the list here that is passed to the menu,
-                // allowing the menu to have one less option, 
-                // when adding functionality to menu this might become unsafe
                 landsAbleToTurn.Remove(land);
-                var landEnergy = land.GetEnergy();
-                if (landEnergy is not null)
-                {
-                    this.generatedEnergy.Add(landEnergy);
-                    nominatedLands.Add(land);
-                }
-                else
-                {
-                    Console.WriteLine("Land can't generate energy at the moment");
-                }
+                chosenLands.Add(land);
             });
-            chooseLandMenu.Prompt($"Please choose a land to use (nominated lands: {nominatedLands.Count} of {amountOfLandsNeeded})");
+            chooseLandMenu.Prompt($"Please choose a land to turn (nominated lands: {chosenLands.Count} of {amountOfLandsNeeded})");
         }
+        return chosenLands;
+    }
 
-        return nominatedLands;
+    private void TurnLands(List<Land> lands)
+    {
+        lands.ForEach((land) =>
+        {
+            var landEnergy = land.Turn();
+            if (landEnergy is null)
+            {
+                Console.WriteLine("Land can't generate energy at the moment");
+                return;
+            }
+
+            // the TryAdd here is to make sure the energy is added to the dictionary if its not already in there
+            if (!this.generatedEnergy.ContainsKey($"{landEnergy}"))
+            {
+                this.generatedEnergy.Add($"{landEnergy}", 0);
+            }
+            this.generatedEnergy[$"{landEnergy}"]++;
+        });
     }
 
     public List<Creature> GetDefendingCreatures()
