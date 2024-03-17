@@ -3,6 +3,7 @@ jeroen visser 0952491
 */
 namespace Support
 {
+    
     class MenuItem
     {
         public string name;
@@ -14,7 +15,6 @@ namespace Support
             this.action = action;
         }
     }
-
 
     class Menu
     {

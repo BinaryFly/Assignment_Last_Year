@@ -2,7 +2,6 @@
 jeroen visser 0952491
 */
 using System.Collections;
-using Support;
 
 class CardCollection<CardType> : IEnumerable<CardType> where CardType : Card
 {
@@ -71,6 +70,7 @@ class CardCollection<CardType> : IEnumerable<CardType> where CardType : Card
 
 
 // this is the class for the base deck of the player
+// there are only a few methods that need to be added for the base deck that we will use, other than that its just a cardcollection
 class Cards : CardCollection<Card>
 {
     public Cards(IEnumerable<Card> cards) : base(cards) { }

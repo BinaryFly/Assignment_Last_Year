@@ -1,131 +1,132 @@
 /*
 jeroen visser 0952491
 */
-namespace Support
+using Creators;
+
+namespace Support;
+
+class CardSetupInfo
 {
+    private CardCreator creator;
+    private IDictionary<string, int> numberOfCardsInPlace;
 
-    class CardSetup
+    public CardSetupInfo(CardCreator creator, int cardsInDeck, int cardsInHand, int cardsOnBoard, int cardsDisposed)
     {
-        private CardCreator creator;
-        private IDictionary<string, int> numberOfCardsInPlace;
-
-        public CardSetup(CardCreator creator, int cardsInDeck, int cardsInHand, int cardsOnBoard, int cardsDisposed)
-        {
-            this.creator = creator;
-            this.numberOfCardsInPlace = new Dictionary<string, int>() {
+        this.creator = creator;
+        this.numberOfCardsInPlace = new Dictionary<string, int>() {
                 { "InDeck", cardsInDeck },
                 { "InHand", cardsInHand },
                 { "OnBoard", cardsOnBoard },
                 { "Disposed", cardsDisposed }
             };
-        }
-
-        public IDictionary<string, int> NumberOfCardsInPlace { get => numberOfCardsInPlace; }
-        public CardCreator Creator { get => creator; }
-        public int TotalCards { get => this.numberOfCardsInPlace.Aggregate<KeyValuePair<string, int>, int>(0, (initialCount, kvPair) => initialCount + kvPair.Value); }
-
-        public IList<Card> GetCards()
-        {
-            List<Card> cardsToReturn = new List<Card>();
-            foreach (KeyValuePair<string, int> kv in numberOfCardsInPlace)
-            {
-                for (int i = 0; i < kv.Value; i++) 
-                {
-                    var card = creator.Create();
-                    switch (kv.Key)
-                    {
-
-                        case "InDeck":
-                            card.ChangeLocation(new InDeck(card));
-                            break;
-                        case "InHand":
-                            card.ChangeLocation(new InHand(card));
-                            break;
-                        case "OnBoard":
-                            card.ChangeLocation(new OnBoard(card));
-                            break;
-                        default:
-                            // the card must be of Disposed value here
-                            card.ChangeLocation(new Disposed(card));
-                            break;
-                    }
-                    cardsToReturn.Add(card);
-                }
-            }
-
-            return cardsToReturn;
-        }
     }
 
-    class Setup
+    public IDictionary<string, int> NumberOfCardsInPlace { get => numberOfCardsInPlace; }
+    public CardCreator Creator { get => creator; }
+    public int TotalCards { get => this.numberOfCardsInPlace.Aggregate<KeyValuePair<string, int>, int>(0, (initialCount, kvPair) => initialCount + kvPair.Value); }
+
+    public IList<Card> GetCards()
     {
-        public static void SetupDemoSituation()
+        List<Card> cardsToReturn = new List<Card>();
+        foreach (KeyValuePair<string, int> kv in numberOfCardsInPlace)
         {
-            SetupPlayersAndCards();
-            SetupStartingState();
+            for (int i = 0; i < kv.Value; i++)
+            {
+                var card = creator.Create();
+                switch (kv.Key)
+                {
+
+                    case "InDeck":
+                        card.ChangeLocation(new InDeck(card));
+                        break;
+                    case "InHand":
+                        card.ChangeLocation(new InHand(card));
+                        break;
+                    case "OnBoard":
+                        card.ChangeLocation(new OnBoard(card));
+                        break;
+                    default:
+                        // the card must be of Disposed value here
+                        card.ChangeLocation(new Disposed(card));
+                        break;
+                }
+                cardsToReturn.Add(card);
+            }
         }
 
-        private static void SetupPlayersAndCards()
-        {
-            var gb = GameBoard.Instance;
-            var playerOne = PlayerOne();
-            var playerTwo = PlayerTwo();
-            playerOne.Cards = PlayerOneDeck();
-            playerTwo.Cards = PlayerTwoDeck();
+        return cardsToReturn;
+    }
+}
 
-            // its both players second turn, so for this setup we already make it so the players had their first turn
-            // this is also needed because lands can't be turned played on the same turn
-            playerOne.IncrementTurn();
-            playerTwo.IncrementTurn();
+class Setup
+{
+    public static void SetupDemoSituation()
+    {
+        SetupPlayersAndCards();
+        SetupStartingState();
+    }
 
-            gb.SetPlayers(playerOne, playerTwo);
-        }
+    private static void SetupPlayersAndCards()
+    {
+        var gb = GameBoard.Instance;
+        var playerOne = PlayerOne();
+        var playerTwo = PlayerTwo();
+        playerOne.Cards = PlayerOneDeck();
+        playerTwo.Cards = PlayerTwoDeck();
 
-        private static Player PlayerOne()
-        {
-            return new Player("Eric Cartman");
-        }
+        // its both players second turn, so for this setup we already make it so the players had their first turn
+        // this is also needed because lands can't be turned played on the same turn
+        playerOne.IncrementTurn();
+        playerTwo.IncrementTurn();
 
-        public static Player PlayerTwo()
-        {
-            return new Player("Kyle Broflovski");
-        }
+        gb.SetPlayers(playerOne, playerTwo);
+    }
 
-        private static Cards PlayerOneDeck()
-        {
-            // has at least 2 lands in his hand in the starting position
-            // has at least 1 land in his second turn
-            // has at least 1 watersprite in his second turn
-            var cardSetups = new List<CardSetup>() {
-                new CardSetup(new OceanCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 2, cardsDisposed: 0),
-                new CardSetup(new MockColourCard<Blue>(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetup(new WaterSpriteCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetup(new NullCardCreator<White>(), cardsInDeck: 24, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
+    private static Player PlayerOne()
+    {
+        return new Player("Eric Cartman");
+    }
+
+    public static Player PlayerTwo()
+    {
+        return new Player("Kyle Broflovski");
+    }
+
+    private static Cards PlayerOneDeck()
+    {
+        // has at least 2 lands in his hand in the starting position
+        // has at least 1 land in his second turn
+        // has at least 1 watersprite in his second turn
+        var cardSetups = new List<CardSetupInfo>() {
+                new CardSetupInfo(new OceanCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 2, cardsDisposed: 0),
+                new CardSetupInfo(new MockColourCard<Blue>(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new WaterSpriteCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 24, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
-            var cardList = cardSetups.Aggregate<CardSetup, IEnumerable<Card>>(new List<Card>(),
-                    (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
-            );
+        var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
+                (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
+        );
 
-            return new Cards(cardList);
-        }
+        return new Cards(cardList);
+    }
 
-        
-        private static Cards PlayerTwoDeck()
-        {
-            var cardSetups = new List<CardSetup>() {
-                new CardSetup(new VolcanoCreator(), cardsInDeck: 2, cardsInHand: 0, cardsOnBoard: 1, cardsDisposed: 0),
-                new CardSetup(new SkyCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetup(new DesertCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 3, cardsDisposed: 0),
-                new CardSetup(new NullCardCreator<White>(), cardsInDeck: 25, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
+
+    private static Cards PlayerTwoDeck()
+    {
+        var cardSetups = new List<CardSetupInfo>() {
+                new CardSetupInfo(new VolcanoCreator(), cardsInDeck: 2, cardsInHand: 0, cardsOnBoard: 1, cardsDisposed: 0),
+                new CardSetupInfo(new SkyCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new DesertCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 3, cardsDisposed: 0),
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 25, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
-            var cardList = cardSetups.Aggregate<CardSetup, IEnumerable<Card>>(new List<Card>(),
-                    (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
-            );
+        var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
+                (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
+        );
 
-            return new Cards(cardList);
-        }
+        return new Cards(cardList);
+    }
 
 
     // after setting the cards for each player set the starting state
@@ -247,4 +248,4 @@ namespace Support
         eventHandler.RegisterEffect(onInterrupt);
     }
 }
-}
+
