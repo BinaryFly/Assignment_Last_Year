@@ -15,10 +15,12 @@ class GameBoard : EventReactor
 
     private GameBoard()
     {
+        // we mainly set the players here already to avoid intellisense warnings
         this.playerOne = new Player("dummy");
         this.playerTwo = new Player("dummy");
         this.currentPlayer = this.playerOne;
         this.opponent = this.playerTwo;
+
         this.currentPhase = new Preparation();
     }
 
@@ -35,41 +37,10 @@ class GameBoard : EventReactor
         }
     }
 
-    public Player PlayerOne
-    {
-        get => playerOne;
-        set
-        {
-            SetPlayerIfDummy(value);
-            playerOne = value;
-        }
-    }
+    public Player PlayerOne { get => playerOne; }
+    public Player PlayerTwo { get => playerTwo; }
 
-    public Player PlayerTwo
-    {
-        get => playerTwo;
-        set
-        {
-            SetPlayerIfDummy(value);
-            playerTwo = value;
-        }
-    }
-
-    public Player CurrentPlayer
-    {
-        get => currentPlayer; set
-        {
-            currentPlayer = value;
-            // automatically set the opponent whenever the current player changes
-            if (this.currentPlayer == this.playerOne)
-            {
-                this.opponent = this.playerTwo;
-                return;
-            }
-            this.opponent = this.playerOne;
-        }
-    }
-
+    public Player CurrentPlayer { get => currentPlayer; }
     public Player Opponent { get => opponent; }
 
     public void HandlePhase()
@@ -82,29 +53,28 @@ class GameBoard : EventReactor
         this.currentPhase = newPhase;
     }
 
-    // if the current player is still a dummy player, set the newly set player also as the current player
-    private void SetPlayerIfDummy(Player playerToSet)
+    /// <summary>
+    /// Sets the first argument as PlayerOne and the CurrentPlayer.
+    /// Sets the second argument as PlayerTwo and the Opponent.
+    /// </summary>
+    public void SetPlayers(Player currentPlayer, Player opponent) 
     {
-        if (playerToSet.Name == "dummy") return;
-
-        if (this.CurrentPlayer.Name == "dummy")
-        {
-            this.CurrentPlayer = playerToSet;
-        }
-        else if (this.Opponent.Name == "dummy")
-        {
-            this.opponent = playerToSet;
-        }
+        this.playerOne = currentPlayer;
+        this.currentPlayer = currentPlayer;
+        this.playerTwo = opponent;
+        this.opponent = opponent;
     }
 
     public void SwitchPlayers()
     {
         if (this.currentPlayer == this.PlayerOne)
         {
-            this.CurrentPlayer = this.PlayerTwo;
+            this.opponent = this.PlayerOne;
+            this.currentPlayer = this.PlayerTwo;
             return;
         }
-        this.CurrentPlayer = this.PlayerOne;
+        this.opponent = this.PlayerTwo;
+        this.currentPlayer = this.PlayerOne;
     }
 
 

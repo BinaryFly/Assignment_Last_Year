@@ -38,7 +38,6 @@ internal class Program
         Player playerOne = new Player("Arnold");
         Player playerTwo = new Player("Bryce");
 
-        gameboard.PlayerOne = playerOne;
-        gameboard.PlayerTwo = playerTwo;
+        gameboard.SetPlayers(playerOne, playerTwo);
     }
 }
