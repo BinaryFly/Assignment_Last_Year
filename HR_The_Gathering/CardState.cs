@@ -63,6 +63,13 @@ class InHand : LocationState
             effect.Player = GameBoard.Instance.CurrentPlayer;
             GameBoard.Instance.RegisterEffect(effect);
         });
+
+        // We ask the opponent here if they want to interrupt us playing the card
+        // the card is only interruptible if its not a land
+        if (this.owner is not Land) {
+            GameBoard.Instance.HandleEvent(Event.INTERRUPT);
+        }
+
         GameBoard.Instance.HandleEvent(Event.PLAY_CARD);
     }
 
@@ -165,13 +172,6 @@ abstract class LandState : State<Land>
 {
     protected LandState(Land land) : base(land) { }
 
-    public virtual Colour? GetEnergy()
-    {
-        // returns the energy value for the turned land by calling on the context
-        // should only happen if this state is not Turned
-        return this.owner.Colour;
-    }
-
     public virtual Colour? Turn() { return null; }
     public virtual void Reset() { }
 }
@@ -179,11 +179,6 @@ abstract class LandState : State<Land>
 class Turned : LandState
 {
     public Turned(Land land) : base(land) { }
-
-    public override Colour? GetEnergy()
-    {
-        return null;
-    }
 
     public override void Reset()
     {
