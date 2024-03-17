@@ -20,9 +20,13 @@ class Effect
     }
 
     // The execute method executes some effect based on the action that was passed to it
-    public virtual void Execute()
+    public void Execute()
     {
         this.effect(info);
+    }
+
+    public void Cleanup()
+    {
         if (info.UnregisterAfterExecute)
         {
             GameBoard.Instance.UnregisterEffect(this);
@@ -30,8 +34,8 @@ class Effect
     }
 
     public Event Event { get => eventToInvokeOn; }
-    public Player Player { set => info.Player = value; }
-    public Card Card { set => info.Card = value; }
+    public Player? Player { get => info.Player; set => info.Player = value; }
+    public Card? Card { get => info.Card; set => info.Card = value; }
     public bool NeedsToBeRemovedAfterCardDispose
     {
         get => info.RemoveAfterOwnerIsDisposed;
