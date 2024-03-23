@@ -86,28 +86,5 @@ class EventReactor {
         // sets a flag to skip the next effect
         this.skipNext = true;
     }
-
-    // interrupts the resolution of a card played
-    public void Interrupt() {
-        // the last added effect does not always work
-        // say for example a card is played that has no effect, then this doesn't make sense and will ask the same player twice if he wants to interrupt
-        var lastAddedEffect = effects[Event.PLAY_CARD].Last();
-        
-        var playerThatPlayedCard = lastAddedEffect.Player;
-        if (playerThatPlayedCard is null) 
-        {
-            // throw an error here to say that we can't find the player associated with the last effect.
-            System.Console.WriteLine("Can't determine the player that played the initial card that is being interrupted");
-            return;
-        }
-
-        var playerThatCanInterrupt = GameBoard.Instance.PlayerOne == playerThatPlayedCard ? GameBoard.Instance.PlayerTwo : GameBoard.Instance.PlayerOne;
-        if (playerThatCanInterrupt.Cards.InHand.Count() == 0) {
-            System.Console.WriteLine("Can't interrupt because you have no cards to play");
-            return;
-        }
-
-        playerThatCanInterrupt.ChooseCardInHandToPlay();
-    }
 }
 

@@ -14,7 +14,8 @@ abstract class CreatureCreator : CardCreator
         var effects = this.CreateEffects();
         var attack = this.GetAttack();
         var defense = this.GetDefense();
-        return new Creature(id, description, cost, colour, effects, attack, defense);
+        var createdCard = new Creature(id, description, cost, colour, effects, attack, defense);
+        return createdCard;
     }
 
     abstract protected int GetAttack();
@@ -33,16 +34,16 @@ class WaterSpriteCreator : CreatureCreator
         return ColourCreator.GetColour<Blue>();
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        var effects = new List<Effect>();
-        effects.Add(new Effect(this.DisposeCardFromOpponentsHandEffect, Event.PLAY_CARD));
+        var effects = new List<CardEffect>();
+        effects.Add(new CardEffect(this.DisposeCardFromOpponentsHandEffect, Event.PLAY_CARD));
         return effects;
     }
 
-    private void DisposeCardFromOpponentsHandEffect(EffectInfo info)
+    private void DisposeCardFromOpponentsHandEffect(CardEffectInfo info)
     {
-        var opponentCards = GameBoard.Instance.Opponent.Cards.InHand;
+        var opponentCards = GameBoard.Instance.Opponent.Deck.InHand;
         var indexOfCardToDispose = new Random().Next() % opponentCards.Count();
         var cardToDispose = opponentCards.ToList()[indexOfCardToDispose];
         cardToDispose.Dispose();

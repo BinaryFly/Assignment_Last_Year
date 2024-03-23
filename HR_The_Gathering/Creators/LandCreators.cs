@@ -12,7 +12,8 @@ abstract class LandCreator<LandColour> : CardCreator where LandColour : Colour, 
         var id = this.GetId();
         var description = this.GetDescription();
         var colour = this.CreateColour();
-        return new Land(id, description, colour);
+        var createdCard = new Land(id, description, colour);
+        return createdCard;
     }
 
     protected override Colour CreateColour()
@@ -27,9 +28,9 @@ abstract class LandCreator<LandColour> : CardCreator where LandColour : Colour, 
         return new NoCost(ColourCreator.GetColour<LandColour>());
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        return new List<Effect> { };
+        return new List<CardEffect> { };
     }
 }
 

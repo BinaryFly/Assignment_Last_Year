@@ -21,10 +21,6 @@ class CardSetupInfo
             };
     }
 
-    public IDictionary<string, int> NumberOfCardsInPlace { get => numberOfCardsInPlace; }
-    public CardCreator Creator { get => creator; }
-    public int TotalCards { get => this.numberOfCardsInPlace.Aggregate<KeyValuePair<string, int>, int>(0, (initialCount, kvPair) => initialCount + kvPair.Value); }
-
     public IList<Card> GetCards()
     {
         List<Card> cardsToReturn = new List<Card>();
@@ -63,7 +59,6 @@ class Setup
     public static void SetupDemoSituation()
     {
         SetupPlayersAndCards();
-        SetupStartingState();
     }
 
     private static void SetupPlayersAndCards()
@@ -71,12 +66,14 @@ class Setup
         var gb = GameBoard.Instance;
         var playerOne = PlayerOne();
         var playerTwo = PlayerTwo();
-        playerOne.Cards = PlayerOneDeck();
-        playerTwo.Cards = PlayerTwoDeck();
+        playerOne.Deck = PlayerOneDeck();
+        playerTwo.Deck = PlayerTwoDeck();
 
         // its both players second turn, so for this setup we already make it so the players had their first turn
         // this is also needed because lands can't be turned played on the same turn
         playerOne.IncrementTurn();
+        playerOne.IncrementTurn();
+        playerTwo.IncrementTurn();
         playerTwo.IncrementTurn();
 
         gb.SetPlayers(playerOne, playerTwo);
@@ -84,15 +81,15 @@ class Setup
 
     private static Player PlayerOne()
     {
-        return new Player("Eric Cartman");
+        return new Player("Arold");
     }
 
     public static Player PlayerTwo()
     {
-        return new Player("Kyle Broflovski");
+        return new Player("Bryce");
     }
 
-    private static Cards PlayerOneDeck()
+    private static Deck PlayerOneDeck()
     {
         // has at least 2 lands in his hand in the starting position
         // has at least 1 land in his second turn
@@ -101,112 +98,33 @@ class Setup
                 new CardSetupInfo(new OceanCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 2, cardsDisposed: 0),
                 new CardSetupInfo(new MockColourCard<Blue>(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
                 new CardSetupInfo(new WaterSpriteCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 24, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
+                new CardSetupInfo(new AquaShieldCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 21, cardsInHand: 3, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
         var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
                 (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
         );
 
-        return new Cards(cardList);
+        return new Deck(cardList);
     }
 
 
-    private static Cards PlayerTwoDeck()
+    private static Deck PlayerTwoDeck()
     {
         var cardSetups = new List<CardSetupInfo>() {
                 new CardSetupInfo(new VolcanoCreator(), cardsInDeck: 2, cardsInHand: 0, cardsOnBoard: 1, cardsDisposed: 0),
                 new CardSetupInfo(new SkyCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetupInfo(new DesertCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 3, cardsDisposed: 0),
-                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 25, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0)
+                new CardSetupInfo(new DesertCreator(), cardsInDeck: 4, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new LavaWallCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 15, cardsInHand: 6, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
         var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
                 (totalListOfCards, currentCardSetup) => totalListOfCards.Concat(currentCardSetup.GetCards())
         );
 
-        return new Cards(cardList);
-    }
-
-
-    // after setting the cards for each player set the starting state
-    private static void SetupStartingState()
-    {
-        var gb = GameBoard.Instance;
-
-        // setting up player one
-        var playerOneCards = gb.PlayerOne.Cards;
-
-        Dictionary<string, List<string>> playerOneCardsLocation = new Dictionary<string, List<string>>() {
-            { "InHand", new List<string>() { "ocean", "water-sprite" } },
-            { "OnBoard", new List<string>() { "ocean", "ocean", "ocean" } }
-        };
-
-        // setting the cards on board
-        foreach (Card card in playerOneCards)
-        {
-            if (playerOneCardsLocation["OnBoard"].Contains(card.Id))
-            {
-                card.ChangeLocation(new OnBoard(card));
-                playerOneCardsLocation["OnBoard"].Remove(card.Id);
-            }
-            else if (playerOneCardsLocation["InHand"].Contains(card.Id))
-            {
-                card.ChangeLocation(new InHand(card));
-                playerOneCardsLocation["InHand"].Remove(card.Id);
-            }
-            /* else if (playerOneCardsLocation["Disposed"].Contains(card.Id)) */
-            /* { */
-            /*     card.ChangeLocation(new Disposed(card)); */
-            /*     playerOneCardsLocation["Disposed"].Remove(card.Id); */
-            /* } */
-        }
-
-        var playerOneLandsOnBoard = playerOneCards.Lands.OnBoard;
-        playerOneLandsOnBoard.Take(2).ToList().ForEach((card) => card.Turn());
-
-        // fill the rest of the hand with null-cards
-        foreach (Card card in playerOneCards) if (playerOneCards.InHand.Count() < 7)
-            {
-                if (card.Id == "null-card")
-                {
-                    card.ChangeLocation(new InHand(card));
-                }
-            }
-
-        // turn 2 of the lands on the board
-        var playerTwoCards = gb.PlayerTwo.Cards;
-
-        Dictionary<string, List<string>> playerTwoCardsLocation = new Dictionary<string, List<string>>();
-        playerTwoCardsLocation.Add("OnBoard", new List<string>() { "volcano", "desert", "desert", "desert" });
-        playerTwoCardsLocation.Add("InHand", new List<string>() { "brown-bear", "the-bane-of-my-life" });
-        // setting the cards on board
-        foreach (Card card in playerTwoCards)
-        {
-            if (playerTwoCardsLocation["OnBoard"].Contains(card.Id))
-            {
-                card.ChangeLocation(new OnBoard(card));
-                playerTwoCardsLocation["OnBoard"].Remove(card.Id);
-            }
-            else if (playerTwoCardsLocation["InHand"].Contains(card.Id))
-            {
-                card.ChangeLocation(new InHand(card));
-                playerTwoCardsLocation["InHand"].Remove(card.Id);
-            }
-            /* else if (playerTwoCardsLocation["Disposed"].Contains(card.Id)) */
-            /* { */
-            /*     card.ChangeLocation(new Disposed(card)); */
-            /*     playerTwoCardsLocation["Disposed"].Remove(card.Id); */
-            /* } */
-        }
-
-        foreach (Card card in playerTwoCards) if (playerTwoCards.InHand.Count() < 7)
-            {
-                if (card.Id == "null-card")
-                {
-                    card.ChangeLocation(new InHand(card));
-                }
-            }
+        return new Deck(cardList);
     }
 
 
@@ -215,27 +133,27 @@ class Setup
     {
         EventReactor eventHandler = GameBoard.Instance;
 
-        var logSituationOnNewTurn = new Effect((info) =>
+        var logSituationOnNewTurn = new DefaultEffect(() =>
         {
-            Console.WriteLine("\n====================");
             Console.WriteLine("New turn is starting...");
-            GameBoard.Instance.LogSituation();
+            Logger.Situation();
         }, Event.LOG_NEW_TURN);
         eventHandler.RegisterEffect(logSituationOnNewTurn);
 
         // Setting some more custom general events
-        var onGameOver = new Effect((_) =>
+        var onGameOver = new DefaultEffect(() =>
         {
             var gameboard = GameBoard.Instance;
             gameboard.GameOver();
-            gameboard.LogSituation();
+            Logger.Situation();
         }, Event.PLAYERDIED);
         eventHandler.RegisterEffect(onGameOver);
 
         // setting a special callback effect for interruptions
-        var onInterrupt = new Effect((info) =>
+        var onInterrupt = new DefaultEffect(() =>
         {
-            System.Console.WriteLine(info.Player?.Name);
+            System.Console.WriteLine("");
+            System.Console.WriteLine(GameBoard.Instance.Opponent.Name);
             var continueInterrupt = false;
             var onYes = () => { continueInterrupt = true; };
             var onNo = () => { };
@@ -243,7 +161,10 @@ class Setup
             interruptMenu.Prompt("Do you wish to interrupt?");
             if (!continueInterrupt) return;
 
-            GameBoard.Instance.Interrupt();
+            GameBoard.Instance.SwitchPlayers(); // make the opponent the currentplayer temporarily
+            GameBoard.Instance.CurrentPlayer.ChooseCardInHandToPlay();
+            GameBoard.Instance.SwitchPlayers(); // switch the players back
+            
         }, Event.INTERRUPT);
         eventHandler.RegisterEffect(onInterrupt);
     }

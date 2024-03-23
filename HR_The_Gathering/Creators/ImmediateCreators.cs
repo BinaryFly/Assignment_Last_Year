@@ -28,9 +28,9 @@ class NullCardCreator<ColourType> : ImmediateCreator where ColourType : Colour, 
         return ColourCreator.GetColour<ColourType>();
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        return new List<Effect>();
+        return new List<CardEffect>();
     }
 
     protected override string GetDescription()
@@ -67,23 +67,16 @@ class StrengthOfNatureCreator : ImmediateCreator
         return ColourCreator.GetColour<Green>();
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        var effects = new List<Effect>();
-        effects.Add(new Effect(GiveCreaturePlusFiveAttackAndDefense, Event.PLAY_CARD));
+        var effects = new List<CardEffect>();
+        effects.Add(new CardEffect(GiveCreaturePlusFiveAttackAndDefense, Event.PLAY_CARD));
         return effects;
     }
 
-    private void GiveCreaturePlusFiveAttackAndDefense(EffectInfo info)
+    private void GiveCreaturePlusFiveAttackAndDefense(CardEffectInfo info)
     {
-        if (info.Player is null)
-        {
-            // for a more professional approach we should throw an error here, instead of just logging the line.
-            Console.WriteLine("Incorrect info for StrengthOfNatureCreator");
-            return;
-        }
-
-        var creaturesOnBoard = info.Player.Cards.Creatures.OnBoard;
+        var creaturesOnBoard = GameBoard.Instance.CurrentPlayer.Deck.Creatures.OnBoard;
         var buffToApply = new Buff(
                 (currentAttack) => currentAttack + 5,
                 (currentDefense) => currentDefense + 5
@@ -117,14 +110,14 @@ class LavaWallCreator : ImmediateCreator
         return ColourCreator.GetColour<Red>();
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        var effects = new List<Effect>();
-        effects.Add(new Effect(BlockSpell, Event.PLAY_CARD));
+        var effects = new List<CardEffect>();
+        effects.Add(new CardEffect(BlockSpell, Event.PLAY_CARD));
         return effects;
     }
 
-    private void BlockSpell(EffectInfo info)  
+    private void BlockSpell(CardEffectInfo info)  
     {
         GameBoard.Instance.SkipNextEffect();
     }
@@ -152,14 +145,14 @@ class AquaShieldCreator : ImmediateCreator
         return ColourCreator.GetColour<Blue>();
     }
 
-    protected override List<Effect> CreateEffects()
+    protected override List<CardEffect> CreateEffects()
     {
-        var effects = new List<Effect>();
-        effects.Add(new Effect(BlockSpell, Event.PLAY_CARD));
+        var effects = new List<CardEffect>();
+        effects.Add(new CardEffect(BlockSpell, Event.PLAY_CARD));
         return effects;
     }
 
-    private void BlockSpell(EffectInfo info)  
+    private void BlockSpell(CardEffectInfo info)  
     {
         GameBoard.Instance.SkipNextEffect();
     }

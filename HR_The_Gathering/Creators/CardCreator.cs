@@ -13,6 +13,6 @@ abstract class CardCreator
     protected abstract string GetDescription();
     protected abstract CardCost CreateEnergyCost();
     protected abstract Colour CreateColour();
-    protected abstract List<Effect> CreateEffects();
+    protected abstract List<CardEffect> CreateEffects();
 }
 

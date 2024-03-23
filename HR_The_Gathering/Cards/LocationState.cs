@@ -27,11 +27,6 @@ abstract class LocationState : State<Card>
         // set the state to Disposed, does only work if the card is OnBoard
         throw new MethodAccessException();
     }
-
-    public virtual void Retrieve()
-    {
-        throw new MethodAccessException();
-    }
 }
 
 
@@ -53,14 +48,11 @@ class InHand : LocationState
     public override void Play()
     {
         Console.WriteLine($"Playing card: {this.owner.ToString()}");
-        this.owner.TurnPlayed = GameBoard.Instance.CurrentPlayer.Turn;
         // every card goes on the board, immediate spells get disposed right after anyway
         this.owner.ChangeLocation(new OnBoard(this.owner));
         // registering all effects here in case a card has more than one effect
         this.owner.Effects.ForEach((effect) =>
         {
-            effect.Card = this.owner;
-            effect.Player = GameBoard.Instance.CurrentPlayer;
             GameBoard.Instance.RegisterEffect(effect);
         });
 
@@ -111,16 +103,5 @@ class OnBoard : LocationState
 class Disposed : LocationState
 {
     public Disposed(Card card) : base(card) { }
-
-    public override void Retrieve()
-    {
-        Console.WriteLine($"Retrieving card: {this.owner.ToString()}");
-        this.owner.ChangeLocation(new InHand(this.owner));
-        if (this.owner is Creature)
-        {
-            var creature = ((Creature)this.owner);
-            creature.ResetToInitial();
-        }
-    }
 }
 

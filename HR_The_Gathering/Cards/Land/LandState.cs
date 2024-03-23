@@ -2,6 +2,7 @@
 jeroen visser 0952491
 */
 using PatternUtils;
+
 abstract class LandState : State<Land>
 {
     protected LandState(Land land) : base(land) { }
@@ -10,6 +11,10 @@ abstract class LandState : State<Land>
     public virtual void Reset() { }
 }
 
+// a land always starts out Turned, since we need to wait a turn after playing before we can turn it
+// lands on board are always reset during the preparation phase
+// and since we play this land during the main phase we can just give it an initial 'Turned' state
+// to ensure it can't be turned until the next turn.
 class Turned : LandState
 {
     public Turned(Land land) : base(land) { }
@@ -27,12 +32,6 @@ class UnTurned : LandState
 
     public override Colour? Turn()
     {
-        // return null if it is the same turn as the land was played
-        if (this.owner.TurnPlayed == GameBoard.Instance.CurrentPlayer.Turn) 
-        {
-            return null;
-        }
-
         Console.WriteLine($"Turning land: {this.owner.Id}");
         this.owner.State = new Turned(this.owner);
         return this.owner.Colour;

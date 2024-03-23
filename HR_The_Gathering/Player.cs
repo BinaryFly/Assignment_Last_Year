@@ -18,7 +18,7 @@ class Player : Target
     private int health = 10;
     private string name;
     private bool dead = false;
-    private Cards cards = new Cards(new List<Card>());
+    private Deck deck = new Deck(new List<Card>());
     private IDictionary<string, int> generatedEnergy = new Dictionary<string, int>();
     private int turn = 0;
 
@@ -27,7 +27,7 @@ class Player : Target
         this.name = name;
     }
 
-    public Cards Cards { get => cards; set => cards = value; }
+    public Deck Deck { get => deck; set => this.deck = value; }
 
     public int Health
     {
@@ -69,10 +69,19 @@ class Player : Target
         this.Health -= damage;
     }
 
+    // invoked after setting the cards on this player with the player that owns these cards
+    private void UpdateCardInfo()
+    {
+        foreach (Card card in this.deck) 
+        {
+          // TODO: check if we need to define this method here, or maybe its better to put the player/cardinfo directly on the cards   
+        }
+    }
+
     public void ResetLands()
     {
         Console.WriteLine("### Lands are being reset ###");
-        foreach (Land land in Cards.Lands.OnBoard)
+        foreach (Land land in Deck.Lands.OnBoard)
         {
             land.Reset();
         }
@@ -82,7 +91,7 @@ class Player : Target
     public void ResetCreatures()
     {
         Console.WriteLine("### Creatures are being reset to defending state ###");
-        foreach (Creature creature in Cards.Creatures.OnBoard)
+        foreach (Creature creature in Deck.Creatures.OnBoard)
         {
             creature.PerformDefend();
         }
@@ -93,7 +102,7 @@ class Player : Target
     {
         // checking if there are any cards left to draw
         // if not send a 'PlayerDiedEvent' to the eventHandler
-        var cardToDraw = this.Cards.InDeck.FirstOrDefault();
+        var cardToDraw = this.Deck.InDeck.FirstOrDefault();
 
         if (cardToDraw is null)
         {
@@ -114,7 +123,7 @@ class Player : Target
     public void DiscardExcessCards()
     {
         Console.WriteLine("### Disposing excess cards ###");
-        var cardsInHand = this.Cards.InHand;
+        var cardsInHand = this.Deck.InHand;
         var cardsToDispose = cardsInHand.Count() - Constants.MAX_CARDS_IN_HAND;
 
         for (int cardsDisposed = 0; cardsDisposed < cardsToDispose; cardsDisposed++)
@@ -127,7 +136,7 @@ class Player : Target
 
     public void ChooseCardInHandToPlay()
     {
-        var cardsInHand = Cards.InHand;
+        var cardsInHand = Deck.InHand;
         var cardMenu = new CardMenu<Card>(cardsInHand, PlaySelectedCard);
         cardMenu.Prompt("Which card do you want to play?:");
     }
@@ -148,7 +157,6 @@ class Player : Target
             chosenLands.ForEach((land) => land.Reset());
             generatedEnergy.Clear();
         }
-
     }
 
     // TODO: test this
@@ -161,10 +169,9 @@ class Player : Target
         }
 
         // the lands that are able to turn are all the lands that are UnTurned and not played this turn
-        var landsAbleToTurn = Cards.Lands.OnBoard.Where((land) =>
-                land.State is UnTurned && land.TurnPlayed != this.Turn).ToList();
+        var landsAbleToTurn = Deck.Lands.OnBoard.Where((land) => land.State is UnTurned).ToList();
         var chosenLands = new List<Land>();
-        if (landsAbleToTurn.Count < amountOfLandsNeeded)
+        if (landsAbleToTurn.Count() < amountOfLandsNeeded)
         {
             Console.WriteLine("Not enough lands available to satisfy cost...");
             return chosenLands;
@@ -205,7 +212,7 @@ class Player : Target
 
     public List<Creature> GetDefendingCreatures()
     {
-        return this.Cards.Creatures.OnBoard.Where((creature) => creature.State is Defending).ToList();
+        return this.Deck.Creatures.OnBoard.Where((creature) => creature.State is Defending).ToList();
     }
 
     public void IncrementTurn()

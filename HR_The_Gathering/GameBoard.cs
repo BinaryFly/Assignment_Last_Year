@@ -92,9 +92,13 @@ class GameBoard : EventReactor
         {
             Console.WriteLine($"Player {PlayerOne.GetName()} died, Player {PlayerTwo.GetName()} won!");
         }
-        else
+        else if (PlayerTwo.IsDead)
         {
             Console.WriteLine($"Player {PlayerTwo.GetName()} died, Player {PlayerOne.GetName()} won!");
+        }
+        else {
+            // this is handy if we forcefully quit the game after the Debug situation
+            Console.WriteLine($"Game ended");
         }
     }
 
@@ -125,26 +129,9 @@ class GameBoard : EventReactor
         {
             // return all creatures as targets whenever there are defending creatures
             // the player should also be able to attack attacking creatures if there are defending ones
-            return Opponent.Cards.OnBoard.Creatures.ToList<Target>();
+            return Opponent.Deck.OnBoard.Creatures.ToList<Target>();
         }
         return new List<Target>() { Opponent };
-    }
-
-    // logs the relevant situation
-    public void LogSituation()
-    {
-        Console.WriteLine(@$"
-===== Current Situation =====                               
-Turn {currentPlayer.Turn} of {currentPlayer.GetName()}
-Player {PlayerOne.GetName()}: Health: {PlayerOne.Health}
-Player {PlayerTwo.GetName()}: Health: {PlayerTwo.Health}
-
-===== Player {PlayerOne.GetName()} cards overview =====
-{PlayerOne.Cards.ToString()}
- 
-===== Player {PlayerTwo.GetName()} cards overview =====
-{PlayerTwo.Cards.ToString()}
-");
     }
 }
 

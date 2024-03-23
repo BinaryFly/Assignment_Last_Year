@@ -12,6 +12,7 @@ abstract class SpellCreator : CardCreator
         var cost = this.CreateEnergyCost();
         var colour = this.CreateColour();
         var effects = this.CreateEffects();
-        return new Spell(id, description, cost, colour, effects);
+        var createdCard = new Spell(id, description, cost, colour, effects);
+        return createdCard;
     }
 }
