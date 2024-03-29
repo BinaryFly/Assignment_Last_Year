@@ -6,7 +6,7 @@ using Support;
 
 class GameBoard : EventReactor
 {
-    private static GameBoard? instance;
+    private static readonly GameBoard instance = new();
     private Player playerOne;
     private Player playerTwo;
     private Player currentPlayer;
@@ -28,11 +28,6 @@ class GameBoard : EventReactor
     {
         get
         {
-            if (instance == null)
-            {
-                Console.WriteLine("Creating GameBoard Instance");
-                instance = new GameBoard();
-            }
             return instance;
         }
     }

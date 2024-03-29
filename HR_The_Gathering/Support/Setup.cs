@@ -56,6 +56,20 @@ class CardSetupInfo
 
 class Setup
 {
+    public static void RunDemo()
+    {
+        // creating the game loop
+        var gameEnded = false;
+        var eventHandler = GameBoard.Instance;
+
+        eventHandler.RegisterEffect(new DefaultEffect(() => { gameEnded = true; }, Event.PLAYERDIED));
+
+        while (!gameEnded)
+        {
+            GameBoard.Instance.HandlePhase();
+        }
+    }
+
     public static void SetupDemoSituation()
     {
         SetupPlayersAndCards();
@@ -96,10 +110,9 @@ class Setup
         // has at least 1 watersprite in his second turn
         var cardSetups = new List<CardSetupInfo>() {
                 new CardSetupInfo(new OceanCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 2, cardsDisposed: 0),
-                new CardSetupInfo(new MockColourCard<Blue>(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
                 new CardSetupInfo(new WaterSpriteCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
                 new CardSetupInfo(new AquaShieldCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 21, cardsInHand: 3, cardsOnBoard: 0, cardsDisposed: 0)
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 21, cardsInHand: 4, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
         var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
@@ -114,10 +127,8 @@ class Setup
     {
         var cardSetups = new List<CardSetupInfo>() {
                 new CardSetupInfo(new VolcanoCreator(), cardsInDeck: 2, cardsInHand: 0, cardsOnBoard: 1, cardsDisposed: 0),
-                new CardSetupInfo(new SkyCreator(), cardsInDeck: 1, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetupInfo(new DesertCreator(), cardsInDeck: 4, cardsInHand: 0, cardsOnBoard: 0, cardsDisposed: 0),
                 new CardSetupInfo(new LavaWallCreator(), cardsInDeck: 0, cardsInHand: 1, cardsOnBoard: 0, cardsDisposed: 0),
-                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 15, cardsInHand: 6, cardsOnBoard: 0, cardsDisposed: 0)
+                new CardSetupInfo(new NullCardCreator<White>(), cardsInDeck: 20, cardsInHand: 6, cardsOnBoard: 0, cardsDisposed: 0)
             };
 
         var cardList = cardSetups.Aggregate<CardSetupInfo, IEnumerable<Card>>(new List<Card>(),
@@ -131,7 +142,7 @@ class Setup
     // we set all the effects that happen every turn here so they can be overwritten by other effects at runtime
     public static void SetupDefaultEffects()
     {
-        EventReactor eventHandler = GameBoard.Instance;
+        var eventHandler = GameBoard.Instance;
 
         var logSituationOnNewTurn = new DefaultEffect(() =>
         {
@@ -164,7 +175,6 @@ class Setup
             GameBoard.Instance.SwitchPlayers(); // make the opponent the currentplayer temporarily
             GameBoard.Instance.CurrentPlayer.ChooseCardInHandToPlay();
             GameBoard.Instance.SwitchPlayers(); // switch the players back
-            
         }, Event.INTERRUPT);
         eventHandler.RegisterEffect(onInterrupt);
     }
